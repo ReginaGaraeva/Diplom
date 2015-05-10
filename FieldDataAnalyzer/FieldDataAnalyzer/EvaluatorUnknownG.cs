@@ -162,6 +162,8 @@ namespace FieldDataAnalyzer
 				{
 					node.P_ = new double[5];
 					node.G_ = new double[5];
+					node.a = new double[5];
+					node.b = new double[5];
 					node.P = 0;
 					node.T = 0;
 					node.G = 0;
@@ -204,54 +206,9 @@ namespace FieldDataAnalyzer
 					well.b = new double[] { -12f / 5, 11f/5, 1f/5 };
 				}
 
-				//for (int i = 0; i < Ks.Length; i++) //расчет P и T для каждого из значений коэффициентов
-				//{
-				//	K_p = Ks[i];
-				//	K_t = Ks[i];
-					CalcNode(_graph.endNode);
-					//_PTk[i, 0] = (double)_graph.endNode.P;
-					//_PTk[i, 1] = (double)_graph.endNode.T;
-					//_graph.Clear();
-
-					//foreach (var wellMeasurement in skvData.Where(x => x.Date == date.Date).ToList()) //заполнение данных о скважинах за данный день
-					//{
-					//	var well = _graph.wells.First(x => x.Name == wellMeasurement.Name);
-					//	well.G_condensat = wellMeasurement.G_condensat;
-					//	well.G_gas = wellMeasurement.G_gas;
-					//	well.P_shl = wellMeasurement.P_shl;
-					//	well.P_ust = wellMeasurement.P_ust;
-					//	well.T_shl = wellMeasurement.T_shl;
-					//	well.T_ust = wellMeasurement.T_ust;
-					//}
+				CalcNode(_graph.endNode);
 				break;
 			}
-
-				//var realResults = sborData.FirstOrDefault(x => x.Date == date.Date);
-				//double _Kt = GetInterpolatedValue(realResults.T, new double[] { _PTk[0, 1], _PTk[1, 1], _PTk[2, 1] }, Ks);
-				//double _Kp = GetInterpolatedValue(realResults.P, new double[] { _PTk[0, 0], _PTk[1, 0], _PTk[2, 0] }, Ks);
-				//K_p = _Kp;
-				//K_t = _Kt;
-				//CalcNode(_graph.endNode);
-				//result.GPResults.Add(new GPLearningResult()
-				//{
-				//	Date = date.Date,
-				//	Pexpr = realResults.P,
-				//	Texpr = realResults.T,
-				//	Pf = _PTk[1, 0],
-				//	Tf = _PTk[1, 1],
-				//	Coef_T = _Kt,
-				//	Coef_P = _Kp,
-				//	Pcoef = (double)_graph.endNode.P,
-				//	Tcoef = (double)_graph.endNode.T,
-				//	G = (double)_graph.endNode.G,
-				//	WellMeasurements = skvData.Where(x => x.Date.Date == date.Date).ToList()
-				//});
-				//_graph.Clear();
-				//break;
-			//}
-			//result.Coef_P = result.GPResults.Average(x => x.Coef_P);
-			//result.Coef_T = result.GPResults.Average(x => x.Coef_T);
-			//return result;
 			return new LearningResult();
 		}
 
@@ -270,12 +227,11 @@ namespace FieldDataAnalyzer
 
 		double[] GetParabolCoefs(double[] x, double[] y)
 		{
-			y = y.Select(m => Math.Pow(m/Gkr, 2)).ToArray();
 			double[,] a = new double[3, 3];
 			for (int i = 0; i < 3; i++)
 			{
-				a[i, 0] = Math.Pow((x[i]/Pkr - beta_kr)/(1 - beta_kr), 2);
-				a[i, 1] = (x[i] / Pkr - beta_kr) / (1 - beta_kr);
+				a[i, 0] = Math.Pow(x[i], 2);
+				a[i, 1] = x[i];
 				a[i, 2] = 1;
 			}
 			bool correct = true;

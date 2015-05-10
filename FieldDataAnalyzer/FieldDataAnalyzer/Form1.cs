@@ -15,24 +15,17 @@ namespace FieldDataAnalyzer
 		public Form1()
 		{
 			InitializeComponent();
+			FileParser parser = new FileParser();
+			fieldDescription = parser.ParseGeneralData("UKPG2_gen.txt");
 		}
 
-		private Graph graph;
+		private Graph graph = new Graph();
 		private LearningResult results;
+		private FieldDescription fieldDescription;
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			//DBService dbService = new DBService();
-			//dbService.Disconnect();
-			FileParser parser = new FileParser();
-			FieldDescription fieldDescription = parser.ParseGeneralData("UKPG2_gen.txt");
-			//List<string[]> schema = parser.ParseSchema("UKPG2_schema.txt");
-			//List<PipeData> pipeData = parser.ParsePipes("UKPG2_pipes.txt");
-			//List<string[]> wells = parser.ParseWells("UKPG2_wells.txt");
-			//List<WellData> skvData = parser.ParseSkv("UKPG2_skv.txt");
-			//List<SborData> sborData = parser.ParseSbor("UKPG2_sbor.txt");
 
-			graph = new Graph();
 			FieldDataAnalyzerDBEntities db = new FieldDataAnalyzerDBEntities();
 			//foreach (var well in db.wells)
 			//{
@@ -133,15 +126,37 @@ namespace FieldDataAnalyzer
 
 		private void button2_Click(object sender, EventArgs e)
 		{
-			
-			
+			FieldDataAnalyzerDBEntities db = new FieldDataAnalyzerDBEntities();
+			DateTime dateFrom = db.wells_measurements.Min(x => x.measure_date), dateTo = db.wells_measurements.Max(x => x.measure_date);
+			EvaluatorUnknownG evaluator1 = new EvaluatorUnknownG(graph, fieldDescription, toolStripProgressBar1);
+			evaluator1.Calc(dateFrom, dateTo);
+
+			foreach (var well in graph.wells)
+			{
+				dataGridView4.RowCount++;
+				dataGridView4.Rows[dataGridView4.RowCount - 1].Cells[0].Value = well.Name;
+				dataGridView4.Rows[dataGridView4.RowCount - 1].Cells[1].Value = (well.a != null) ? String.Format("{0}; {1}; {2}", well.a[0], well.a[1], well.a[2]) : "";
+				dataGridView4.Rows[dataGridView4.RowCount - 1].Cells[2].Value = (well.b != null) ? String.Format("{0}; {1}; {2}", well.b[0], well.b[1], well.b[2]) : "";
+				dataGridView4.Rows[dataGridView4.RowCount - 1].Cells[3].Value = (well.P != null) ? String.Format("{0}; {1}; {2}", well.P[0], well.P[1], well.P[2]) : "";
+				dataGridView4.Rows[dataGridView4.RowCount - 1].Cells[4].Value = (well.G != null) ? String.Format("{0}; {1}; {2}", well.G[0], well.G[1], well.G[2]) : "";
+			}
+
+			foreach (var node in graph.nodes)
+			{
+				dataGridView3.RowCount++;
+				dataGridView3.Rows[dataGridView3.RowCount - 1].Cells[0].Value = node.Name;
+				dataGridView3.Rows[dataGridView3.RowCount - 1].Cells[1].Value = (node.a != null) ? String.Format("{0}; {1}; {2}", node.a[0], node.a[1], node.a[2]) : "";
+				dataGridView3.Rows[dataGridView3.RowCount - 1].Cells[2].Value = (node.b != null) ? String.Format("{0}; {1}; {2}", node.b[0], node.b[1], node.b[2]) : "";
+				dataGridView3.Rows[dataGridView3.RowCount - 1].Cells[3].Value = (node.P_ != null) ? String.Format("{0}; {1}; {2}", node.P_[0], node.P_[1], node.P_[2]) : "";
+				dataGridView3.Rows[dataGridView3.RowCount - 1].Cells[4].Value = (node.G_ != null) ? String.Format("{0}; {1}; {2}", node.G_[0], node.G_[1], node.G_[2]) : "";
+			}
 		}
 
 		private void dataGridView4_SelectionChanged(object sender, EventArgs e)
 		{
 			double Gkr = 15, Pkr = 35000000, beta_kr = 0.2;
 			//DateTime selectedDate = Convert.ToDateTime(dataGridView1.CurrentRow.Cells[0].Value);
-
+			if (dataGridView4.CurrentRow.Cells[0].Value == null) return;
 			var well = graph.wells.First(x => x.Name == dataGridView4.CurrentRow.Cells[0].Value.ToString());;
 
 			if ((well == null)||(well.a == null)) return;

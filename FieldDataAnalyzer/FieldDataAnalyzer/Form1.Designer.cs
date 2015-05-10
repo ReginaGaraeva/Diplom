@@ -646,7 +646,7 @@
 			// 
 			this.button2.Location = new System.Drawing.Point(6, 533);
 			this.button2.Name = "button2";
-			this.button2.Size = new System.Drawing.Size(438, 36);
+			this.button2.Size = new System.Drawing.Size(370, 36);
 			this.button2.TabIndex = 6;
 			this.button2.Text = "Вычислить";
 			this.button2.UseVisualStyleBackColor = true;
